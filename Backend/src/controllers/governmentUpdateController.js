@@ -1,4 +1,34 @@
 const GovernmentUpdate = require("../models/GovernmentUpdate");
+const User = require("../models/User");
+const { createNotification } = require("./notificationController");
+
+// ==========================================================
+// Internal helper — notifies every citizen when an update
+// goes live (used on create + on status toggle to Published)
+// ==========================================================
+const notifyCitizensOfUpdate = async (update) => {
+    try {
+
+        const citizens = await User.find({ role: "citizen" }).select("_id");
+
+        await Promise.all(
+            citizens.map((citizen) =>
+                createNotification({
+                    user: citizen._id,
+                    title: `New Update: ${update.category}`,
+                    message: update.title,
+                    type: "GovernmentUpdate"
+                })
+            )
+        );
+
+    } catch (error) {
+
+        // Never let a notification failure break the main flow
+        console.error("Notify Citizens Of Update Error:", error.message);
+
+    }
+};
 
 // ==========================================================
 // @desc    Create a new Government Update (Admin only)
@@ -33,6 +63,11 @@ const createGovernmentUpdate = async (req, res) => {
             eventDate: eventDate || null,
             createdBy: req.user._id
         });
+
+        // Notify all citizens only if the update goes live immediately
+        if (newUpdate.status === "Published") {
+            await notifyCitizensOfUpdate(newUpdate);
+        }
 
         return res.status(201).json({
             success: true,
@@ -187,6 +222,8 @@ const updateGovernmentUpdate = async (req, res) => {
 
         const { title, description, category, status, eventDate } = req.body;
 
+        const wasPublished = update.status === "Published";
+
         if (title) update.title = title;
         if (description) update.description = description;
         if (category) update.category = category;
@@ -199,6 +236,11 @@ const updateGovernmentUpdate = async (req, res) => {
         }
 
         const updatedDoc = await update.save();
+
+        // Notify citizens only the moment a Draft first goes Published
+        if (!wasPublished && updatedDoc.status === "Published") {
+            await notifyCitizensOfUpdate(updatedDoc);
+        }
 
         return res.status(200).json({
             success: true,
@@ -274,6 +316,11 @@ const toggleGovernmentUpdateStatus = async (req, res) => {
         update.status = update.status === "Published" ? "Draft" : "Published";
 
         await update.save();
+
+        // Notify citizens only when it flips TO Published
+        if (update.status === "Published") {
+            await notifyCitizensOfUpdate(update);
+        }
 
         return res.status(200).json({
             success: true,

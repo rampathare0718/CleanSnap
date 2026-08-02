@@ -9,6 +9,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const complaintRoutes = require("./routes/complaintRoutes");
 const governmentUpdateRoutes = require("./routes/governmentUpdateRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 // Load Environment Variables
 dotenv.config();
@@ -27,17 +28,12 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
-// Serve Uploaded Images
+
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// =========================
-// API Routes
-// =========================
 app.use("/api/auth", authRoutes);
-
 app.use("/api/complaints", complaintRoutes);
-
 app.use("/api/government-updates", governmentUpdateRoutes);
+app.use("/api/notifications", notificationRoutes);     
 
 // =========================
 // Home Route

@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { createNotification } = require("./notificationController");
 
 // =========================
 // Register User
@@ -85,6 +86,14 @@ const registerUser = async (req, res) => {
         await user.save();
 
         console.log("User Saved Successfully");
+
+        // Welcome notification for the newly registered citizen
+        await createNotification({
+            user: user._id,
+            title: "Welcome to CleanCity",
+            message: `Hi ${user.fullName}, thanks for joining! Start reporting dirt/waste in your area to earn reward points.`,
+            type: "System"
+        });
 
         // Generate Token
         const token = jwt.sign(

@@ -1,5 +1,6 @@
 const Complaint = require("../models/Complaints");
 const User = require("../models/User");
+const { createNotification } = require("./notificationController");
 
 // ==========================================================
 // @desc    Citizen creates a new complaint (with before image)
@@ -210,6 +211,15 @@ const approveComplaint = async (req, res) => {
 
     await complaint.save();
 
+    // Notify the citizen that their complaint was approved
+    await createNotification({
+      user: complaint.reportedBy,
+      title: "Complaint Approved",
+      message: `Your complaint "${complaint.title}" has been approved and will be assigned to a worker soon.`,
+      type: "Complaint",
+      complaint: complaint._id,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Complaint approved successfully.",
@@ -253,6 +263,15 @@ const rejectComplaint = async (req, res) => {
     complaint.adminRemark = adminRemark || "Rejected by admin.";
 
     await complaint.save();
+
+    // Notify the citizen that their complaint was rejected
+    await createNotification({
+      user: complaint.reportedBy,
+      title: "Complaint Rejected",
+      message: `Your complaint "${complaint.title}" was rejected. Reason: ${complaint.adminRemark}`,
+      type: "Complaint",
+      complaint: complaint._id,
+    });
 
     return res.status(200).json({
       success: true,
@@ -314,6 +333,24 @@ const assignWorker = async (req, res) => {
 
     await complaint.save();
 
+    // Notify the worker that a complaint has been assigned to them
+    await createNotification({
+      user: worker._id,
+      title: "New Complaint Assigned",
+      message: `You have been assigned to clean up: "${complaint.title}".`,
+      type: "Complaint",
+      complaint: complaint._id,
+    });
+
+    // Let the citizen know a worker has been assigned
+    await createNotification({
+      user: complaint.reportedBy,
+      title: "Worker Assigned",
+      message: `A worker has been assigned to your complaint "${complaint.title}".`,
+      type: "Complaint",
+      complaint: complaint._id,
+    });
+
     return res.status(200).json({
       success: true,
       message: "Worker assigned successfully.",
@@ -363,6 +400,15 @@ const startWork = async (req, res) => {
 
     complaint.status = "In Progress";
     await complaint.save();
+
+    // Let the citizen know work has started on their complaint
+    await createNotification({
+      user: complaint.reportedBy,
+      title: "Cleanup In Progress",
+      message: `Work has started on your complaint "${complaint.title}".`,
+      type: "Complaint",
+      complaint: complaint._id,
+    });
 
     return res.status(200).json({
       success: true,
@@ -425,8 +471,28 @@ const completeComplaint = async (req, res) => {
     await complaint.save();
 
     // Reward the citizen who reported the issue
+    const REWARD_POINTS = 10;
+
     await User.findByIdAndUpdate(complaint.reportedBy, {
-      $inc: { rewardPoints: 10 },
+      $inc: { rewardPoints: REWARD_POINTS },
+    });
+
+    // Notify the citizen that the complaint was resolved
+    await createNotification({
+      user: complaint.reportedBy,
+      title: "Complaint Completed",
+      message: `Your complaint "${complaint.title}" has been resolved. Check out the after photo!`,
+      type: "Complaint",
+      complaint: complaint._id,
+    });
+
+    // Notify the citizen separately about the reward earned
+    await createNotification({
+      user: complaint.reportedBy,
+      title: "Reward Points Earned",
+      message: `You earned ${REWARD_POINTS} reward points for reporting "${complaint.title}".`,
+      type: "Reward",
+      complaint: complaint._id,
     });
 
     return res.status(200).json({
