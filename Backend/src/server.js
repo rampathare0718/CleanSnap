@@ -8,6 +8,7 @@ const connectDB = require("./config/db");
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const complaintRoutes = require("./routes/complaintRoutes");
+const governmentUpdateRoutes = require("./routes/governmentUpdateRoutes");
 
 // Load Environment Variables
 dotenv.config();
@@ -35,6 +36,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/auth", authRoutes);
 
 app.use("/api/complaints", complaintRoutes);
+
+app.use("/api/government-updates", governmentUpdateRoutes);
 
 // =========================
 // Home Route
