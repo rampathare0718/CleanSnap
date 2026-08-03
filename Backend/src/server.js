@@ -10,6 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 const complaintRoutes = require("./routes/complaintRoutes");
 const governmentUpdateRoutes = require("./routes/governmentUpdateRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const rewardRoutes=require("./routes/rewardRoutes");
 
 // Load Environment Variables
 dotenv.config();
@@ -33,7 +34,8 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/government-updates", governmentUpdateRoutes);
-app.use("/api/notifications", notificationRoutes);     
+app.use("/api/notifications", notificationRoutes);   
+app.use("/api/rewards",rewardRoutes);  
 
 // =========================
 // Home Route

@@ -1,6 +1,7 @@
 const Complaint = require("../models/Complaints");
 const User = require("../models/User");
 const { createNotification } = require("./notificationController");
+const { createReward } = require("./rewardController");
 
 // ==========================================================
 // @desc    Citizen creates a new complaint (with before image)
@@ -464,20 +465,23 @@ const completeComplaint = async (req, res) => {
       });
     }
 
+    // Update complaint
     complaint.afterImage = req.file.filename;
     complaint.status = "Completed";
     complaint.completedAt = new Date();
 
     await complaint.save();
 
-    // Reward the citizen who reported the issue
-    const REWARD_POINTS = 10;
-
-    await User.findByIdAndUpdate(complaint.reportedBy, {
-      $inc: { rewardPoints: REWARD_POINTS },
+    // Award reward points (Reward Controller handles:
+    // reward history + reward points + reward notification)
+    await createReward({
+      user: complaint.reportedBy,
+      complaint: complaint._id,
+      points: 10,
+      reason: "Complaint Completed",
     });
 
-    // Notify the citizen that the complaint was resolved
+    // Notify citizen that complaint has been completed
     await createNotification({
       user: complaint.reportedBy,
       title: "Complaint Completed",
@@ -486,22 +490,15 @@ const completeComplaint = async (req, res) => {
       complaint: complaint._id,
     });
 
-    // Notify the citizen separately about the reward earned
-    await createNotification({
-      user: complaint.reportedBy,
-      title: "Reward Points Earned",
-      message: `You earned ${REWARD_POINTS} reward points for reporting "${complaint.title}".`,
-      type: "Reward",
-      complaint: complaint._id,
-    });
-
     return res.status(200).json({
       success: true,
-      message: "Complaint marked as Completed. Citizen rewarded.",
+      message: "Complaint marked as Completed. Citizen rewarded successfully.",
       complaint,
     });
+
   } catch (error) {
     console.error("Complete Complaint Error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Server error while completing complaint.",
