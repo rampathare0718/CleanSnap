@@ -11,6 +11,7 @@ const complaintRoutes = require("./routes/complaintRoutes");
 const governmentUpdateRoutes = require("./routes/governmentUpdateRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const rewardRoutes=require("./routes/rewardRoutes");
+const feedbackRoutes=require("./routes/feedbackRoutes");
 
 // Load Environment Variables
 dotenv.config();
@@ -36,6 +37,7 @@ app.use("/api/complaints", complaintRoutes);
 app.use("/api/government-updates", governmentUpdateRoutes);
 app.use("/api/notifications", notificationRoutes);   
 app.use("/api/rewards",rewardRoutes);  
+app.use("/api/feedback",feedbackRoutes);
 
 // =========================
 // Home Route
