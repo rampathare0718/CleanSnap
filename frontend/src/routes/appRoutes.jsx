@@ -1,14 +1,24 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
-import Loader from "../components/common/loader";
+import Loader from "../components/common/Loader";
 import { useAuth } from "../context/AuthContext";
+
+import CitizenLayout from "../layouts/CitizenLayout";
+import Dashboard from "../pages/citizen/Dashboard";
+import CreateComplaint from "../pages/citizen/CreateComplaint";
+import MyComplaints from "../pages/citizen/MyComplaints";
+import ComplaintDetails from "../pages/citizen/ComplaintDetails";
 
 // Blocks logged-in users from re-visiting /login or /register
 const PublicOnlyRoute = ({ children }) => {
-    const { isAuthenticated, loading } = useAuth();
+    const { isAuthenticated, loading, user } = useAuth();
     if (loading) return <Loader fullScreen />;
-    return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
+    if (!isAuthenticated) return children;
+
+    if (user?.role === "admin") return <Navigate to="/admin/dashboard" replace />;
+    if (user?.role === "worker") return <Navigate to="/worker/dashboard" replace />;
+    return <Navigate to="/citizen/dashboard" replace />;
 };
 
 // Blocks anonymous users from protected pages
@@ -18,8 +28,9 @@ const ProtectedRoute = ({ children }) => {
     return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
-// Placeholder — swap in the real dashboard once it's built
-const DashboardPlaceholder = () => <h2 style={{ padding: 40 }}>Dashboard coming soon</h2>;
+// Placeholders — swap in the real modules once they're built
+const AdminDashboardPlaceholder = () => <h2 style={{ padding: 40 }}>Admin dashboard coming soon</h2>;
+const WorkerDashboardPlaceholder = () => <h2 style={{ padding: 40 }}>Worker dashboard coming soon</h2>;
 
 const AppRoutes = () => {
     return (
@@ -44,11 +55,35 @@ const AppRoutes = () => {
                 }
             />
 
+            {/* Citizen module */}
             <Route
-                path="/dashboard"
+                path="/citizen"
                 element={
                     <ProtectedRoute>
-                        <DashboardPlaceholder />
+                        <CitizenLayout />
+                    </ProtectedRoute>
+                }
+            >
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="complaints" element={<MyComplaints />} />
+                <Route path="complaints/new" element={<CreateComplaint />} />
+                <Route path="complaints/:id" element={<ComplaintDetails />} />
+            </Route>
+
+            {/* Admin / Worker — placeholders until those modules are built */}
+            <Route
+                path="/admin/dashboard"
+                element={
+                    <ProtectedRoute>
+                        <AdminDashboardPlaceholder />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/worker/dashboard"
+                element={
+                    <ProtectedRoute>
+                        <WorkerDashboardPlaceholder />
                     </ProtectedRoute>
                 }
             />

@@ -6,6 +6,10 @@ import axios from "axios";
 // VITE_API_BASE_URL=http://localhost:5000/api
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
+// Same host, without the /api suffix — used to build URLs for uploaded
+// images, since multer stores files under /uploads on the server, not /api.
+export const SERVER_BASE_URL = BASE_URL.replace(/\/api\/?$/, "");
+
 const api = axios.create({
     baseURL: BASE_URL,
     headers: {
