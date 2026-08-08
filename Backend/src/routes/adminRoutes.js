@@ -1,11 +1,16 @@
 const express = require("express");
 
-const {
-    createWorker
-} = require("../controllers/workerController");
-
 const router = express.Router();
 
-router.post("/workers", createWorker);
+const { protect, authorize } = require("../middleware/authMiddleware");
+const { getDashboardStats } = require("../controllers/adminController");
+
+// Get dashboard summary stats
+router.get(
+    "/stats",
+    protect,
+    authorize("admin"),
+    getDashboardStats
+);
 
 module.exports = router;

@@ -8,11 +8,13 @@ const connectDB = require("./config/db");
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const userRoutes = require("./routes/userRoutes");
 const complaintRoutes = require("./routes/complaintRoutes");
 const governmentUpdateRoutes = require("./routes/governmentUpdateRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const rewardRoutes=require("./routes/rewardRoutes");
 const feedbackRoutes=require("./routes/feedbackRoutes");
+
 
 // Load Environment Variables
 dotenv.config();
@@ -35,6 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/users", userRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/government-updates", governmentUpdateRoutes);
 app.use("/api/notifications", notificationRoutes);   
