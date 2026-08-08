@@ -1,6 +1,6 @@
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
-import AppRoutes from "./routes/AppRoutes";
+import AppRoutes from "./routes/appRoutes";
 import "./App.css";
 
 function App() {

@@ -71,6 +71,31 @@ const complaintSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    // ---- Deadline (set by admin when assigning a worker) ----
+    deadline: {
+      type: Date,
+      default: null,
+    },
+
+    // ---- Rating (given by citizen to worker after completion) ----
+    rating: {
+      type: Number,
+      min: 1,
+      max: 5,
+      default: null,
+    },
+
+    ratingComment: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    ratedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

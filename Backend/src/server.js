@@ -7,6 +7,7 @@ const connectDB = require("./config/db");
 
 // Routes
 const authRoutes = require("./routes/authRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const complaintRoutes = require("./routes/complaintRoutes");
 const governmentUpdateRoutes = require("./routes/governmentUpdateRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
@@ -33,6 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/government-updates", governmentUpdateRoutes);
 app.use("/api/notifications", notificationRoutes);   

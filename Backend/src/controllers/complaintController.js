@@ -290,12 +290,13 @@ const rejectComplaint = async (req, res) => {
 
 // ==========================================================
 // @desc    Admin assigns a worker to an approved complaint
+//          (optionally sets a deadline for the worker)
 // @route   PUT /api/complaints/:id/assign
 // @access  Private (admin)
 // ==========================================================
 const assignWorker = async (req, res) => {
   try {
-    const { workerId } = req.body;
+    const { workerId, deadline } = req.body;
 
     if (!workerId) {
       return res.status(400).json({
@@ -332,13 +333,20 @@ const assignWorker = async (req, res) => {
     complaint.assignedWorker = worker._id;
     complaint.status = "Assigned";
 
+    // Set deadline if the admin provided one
+    if (deadline) {
+      complaint.deadline = new Date(deadline);
+    }
+
     await complaint.save();
 
     // Notify the worker that a complaint has been assigned to them
     await createNotification({
       user: worker._id,
       title: "New Complaint Assigned",
-      message: `You have been assigned to clean up: "${complaint.title}".`,
+      message: complaint.deadline
+        ? `You have been assigned to clean up: "${complaint.title}". Deadline: ${complaint.deadline.toDateString()}.`
+        : `You have been assigned to clean up: "${complaint.title}".`,
       type: "Complaint",
       complaint: complaint._id,
     });
@@ -507,6 +515,83 @@ const completeComplaint = async (req, res) => {
 };
 
 // ==========================================================
+// @desc    Citizen rates the worker after complaint is completed
+// @route   PUT /api/complaints/:id/rate
+// @access  Private (citizen - must be the one who reported it)
+// ==========================================================
+const rateComplaint = async (req, res) => {
+  try {
+    const { rating, ratingComment } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        message: "Rating must be a number between 1 and 5.",
+      });
+    }
+
+    const complaint = await Complaint.findById(req.params.id);
+
+    if (!complaint) {
+      return res.status(404).json({
+        success: false,
+        message: "Complaint not found.",
+      });
+    }
+
+    if (complaint.reportedBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only rate complaints you reported.",
+      });
+    }
+
+    if (complaint.status !== "Completed") {
+      return res.status(400).json({
+        success: false,
+        message: "You can only rate a complaint after it has been completed.",
+      });
+    }
+
+    if (complaint.rating !== null) {
+      return res.status(400).json({
+        success: false,
+        message: "This complaint has already been rated.",
+      });
+    }
+
+    complaint.rating = rating;
+    complaint.ratingComment = ratingComment || "";
+    complaint.ratedAt = new Date();
+
+    await complaint.save();
+
+    // Notify the worker they've been rated
+    if (complaint.assignedWorker) {
+      await createNotification({
+        user: complaint.assignedWorker,
+        title: "You Received a Rating",
+        message: `You were rated ${rating}/5 for completing "${complaint.title}".`,
+        type: "Complaint",
+        complaint: complaint._id,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Rating submitted successfully.",
+      complaint,
+    });
+  } catch (error) {
+    console.error("Rate Complaint Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while submitting rating.",
+    });
+  }
+};
+
+// ==========================================================
 // @desc    Citizen deletes their own complaint (only if Pending)
 // @route   DELETE /api/complaints/:id
 // @access  Private (citizen owner)
@@ -562,5 +647,6 @@ module.exports = {
   assignWorker,
   startWork,
   completeComplaint,
+  rateComplaint,
   deleteComplaint,
 };

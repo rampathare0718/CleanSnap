@@ -15,6 +15,7 @@ const {
   assignWorker,
   startWork,
   completeComplaint,
+  rateComplaint,
   deleteComplaint,
 } = require("../controllers/complaintController");
 
@@ -47,6 +48,14 @@ router.delete(
   deleteComplaint
 );
 
+// Rate the worker after complaint is completed
+router.put(
+  "/:id/rate",
+  protect,
+  authorize("citizen"),
+  rateComplaint
+);
+
 // ==========================================================
 // Admin Routes
 // ==========================================================
@@ -75,7 +84,7 @@ router.put(
   rejectComplaint
 );
 
-// Assign a worker to an approved complaint
+// Assign a worker to an approved complaint (optionally with a deadline)
 router.put(
   "/:id/assign",
   protect,

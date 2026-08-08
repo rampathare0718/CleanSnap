@@ -10,27 +10,47 @@ import CreateComplaint from "../pages/citizen/CreateComplaint";
 import MyComplaints from "../pages/citizen/MyComplaints";
 import ComplaintDetails from "../pages/citizen/ComplaintDetails";
 
+import WorkerLayout from "../layouts/WorkerLayout";
+import WorkerDashboard from "../pages/worker/Dashboard";
+import AssignedComplaints from "../pages/worker/AssignedComplaints";
+import WorkerComplaintDetails from "../pages/worker/ComplaintDetails";
+import UploadProof from "../pages/worker/UploadProof";
+import WorkerProfile from "../pages/worker/Profile";
+
+const ROLE_HOME = {
+    citizen: "/citizen/dashboard",
+    worker: "/worker/dashboard",
+    admin: "/admin/dashboard"
+};
+
 // Blocks logged-in users from re-visiting /login or /register
 const PublicOnlyRoute = ({ children }) => {
     const { isAuthenticated, loading, user } = useAuth();
     if (loading) return <Loader fullScreen />;
     if (!isAuthenticated) return children;
 
-    if (user?.role === "admin") return <Navigate to="/admin/dashboard" replace />;
-    if (user?.role === "worker") return <Navigate to="/worker/dashboard" replace />;
-    return <Navigate to="/citizen/dashboard" replace />;
+    return <Navigate to={ROLE_HOME[user?.role] || "/login"} replace />;
 };
 
-// Blocks anonymous users from protected pages
-const ProtectedRoute = ({ children }) => {
-    const { isAuthenticated, loading } = useAuth();
+// Blocks anonymous users AND blocks the wrong role from a section.
+// e.g. a "worker" hitting /citizen/dashboard directly gets bounced to
+// /worker/dashboard instead of rendering the citizen page — this is the
+// actual fix for a worker ever seeing the citizen dashboard.
+const ProtectedRoute = ({ allowedRoles, children }) => {
+    const { isAuthenticated, loading, user } = useAuth();
+
     if (loading) return <Loader fullScreen />;
-    return isAuthenticated ? children : <Navigate to="/login" replace />;
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+    if (allowedRoles && !allowedRoles.includes(user?.role)) {
+        return <Navigate to={ROLE_HOME[user?.role] || "/login"} replace />;
+    }
+
+    return children;
 };
 
-// Placeholders — swap in the real modules once they're built
+// Placeholder — swap in the real module once it's built
 const AdminDashboardPlaceholder = () => <h2 style={{ padding: 40 }}>Admin dashboard coming soon</h2>;
-const WorkerDashboardPlaceholder = () => <h2 style={{ padding: 40 }}>Worker dashboard coming soon</h2>;
 
 const AppRoutes = () => {
     return (
@@ -55,11 +75,11 @@ const AppRoutes = () => {
                 }
             />
 
-            {/* Citizen module */}
+            {/* Citizen module — only role "citizen" can enter */}
             <Route
                 path="/citizen"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["citizen"]}>
                         <CitizenLayout />
                     </ProtectedRoute>
                 }
@@ -70,20 +90,28 @@ const AppRoutes = () => {
                 <Route path="complaints/:id" element={<ComplaintDetails />} />
             </Route>
 
-            {/* Admin / Worker — placeholders until those modules are built */}
+            {/* Worker module — only role "worker" can enter */}
+            <Route
+                path="/worker"
+                element={
+                    <ProtectedRoute allowedRoles={["worker"]}>
+                        <WorkerLayout />
+                    </ProtectedRoute>
+                }
+            >
+                <Route path="dashboard" element={<WorkerDashboard />} />
+                <Route path="complaints" element={<AssignedComplaints />} />
+                <Route path="complaints/:id" element={<WorkerComplaintDetails />} />
+                <Route path="complaints/:id/upload-proof" element={<UploadProof />} />
+                <Route path="profile" element={<WorkerProfile />} />
+            </Route>
+
+            {/* Admin module — only role "admin" can enter (placeholder for now) */}
             <Route
                 path="/admin/dashboard"
                 element={
-                    <ProtectedRoute>
+                    <ProtectedRoute allowedRoles={["admin"]}>
                         <AdminDashboardPlaceholder />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/worker/dashboard"
-                element={
-                    <ProtectedRoute>
-                        <WorkerDashboardPlaceholder />
                     </ProtectedRoute>
                 }
             />
