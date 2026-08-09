@@ -1,13 +1,43 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, PlusCircle, ListChecks } from "lucide-react";
+import {
+    LayoutDashboard,
+    PlusCircle,
+    ListChecks,
+    ClipboardList,
+    Users,
+    HardHat,
+    Megaphone,
+    UserCircle,
+    ClipboardCheck,
+    UploadCloud
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
-const links = [
-    { to: "/citizen/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/citizen/complaints/new", label: "Report Issue", icon: PlusCircle },
-    { to: "/citizen/complaints", label: "My Complaints", icon: ListChecks }
-];
+const LINKS_BY_ROLE = {
+    citizen: [
+        { to: "/citizen/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { to: "/citizen/complaints/new", label: "Report Issue", icon: PlusCircle },
+        { to: "/citizen/complaints", label: "My Complaints", icon: ListChecks }
+    ],
+    worker: [
+        { to: "/worker/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { to: "/worker/complaints", label: "Assigned Complaints", icon: ClipboardCheck },
+        { to: "/worker/profile", label: "Profile", icon: UserCircle }
+    ],
+    admin: [
+        { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { to: "/admin/complaints", label: "Complaints", icon: ClipboardList },
+        { to: "/admin/workers", label: "Workers", icon: HardHat },
+        { to: "/admin/users", label: "Users", icon: Users },
+        { to: "/admin/government-updates", label: "Government Updates", icon: Megaphone },
+        { to: "/admin/profile", label: "Profile", icon: UserCircle }
+    ]
+};
 
 const Sidebar = () => {
+    const { user } = useAuth();
+    const links = LINKS_BY_ROLE[user?.role] || [];
+
     return (
         <aside className="hidden md:flex md:flex-col w-64 shrink-0 h-screen sticky top-0 border-r border-neutral-200 bg-white">
             <div className="flex items-center gap-2.5 px-6 h-16 border-b border-neutral-200">

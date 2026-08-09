@@ -58,6 +58,12 @@ const Topbar = ({ title, onMenuClick }) => {
                 console.error("Failed to mark notification as read:", err);
             }
         }
+
+        setNotifOpen(false);
+
+        if (notification.type === "GovernmentUpdate") {
+            navigate("/updates");
+        }
     };
 
     const handleLogout = () => {

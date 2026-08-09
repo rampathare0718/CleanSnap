@@ -5,6 +5,7 @@ import Register from "../pages/auth/Register";
 import Loader from "../components/common/Loader";
 
 import { useAuth } from "../context/AuthContext";
+import UpdatesList from "../pages/government/UpdatesList";
 
 // =========================
 // Citizen
@@ -36,6 +37,14 @@ import AssignWorker from "../pages/admin/AssignWorker";
 import AdminWorkers from "../pages/admin/Workers";
 import AdminUsers from "../pages/admin/Users";
 import AdminProfile from "../pages/admin/Profile";
+
+// =========================
+// Government Updates
+// =========================
+import GovernmentUpdates from "../pages/government/GovernmentUpdates";
+import UpdateDetails from "../pages/government/UpdateDetails";
+import CreateUpdate from "../pages/government/CreateUpdate";
+import EditUpdate from "../pages/government/EditUpdate";
 
 
 // ==========================================================
@@ -162,6 +171,23 @@ const AppRoutes = () => {
                         <Register />
                     </PublicOnlyRoute>
                 }
+            />
+
+
+            {/* ==================================================
+                PUBLIC GOVERNMENT UPDATE VIEWS
+                Accessible to everyone — logged out visitors,
+                citizens, workers, and admins alike
+            ================================================== */}
+
+            <Route
+                path="/updates"
+                element={<UpdatesList />}
+            />
+
+            <Route
+                path="/updates/:id"
+                element={<UpdateDetails />}
             />
 
 
@@ -300,6 +326,27 @@ const AppRoutes = () => {
                 <Route
                     path="profile"
                     element={<AdminProfile />}
+                />
+
+                {/* Government Update Management */}
+                <Route
+                    path="government-updates"
+                    element={<GovernmentUpdates />}
+                />
+
+                <Route
+                    path="government-updates/create"
+                    element={<CreateUpdate />}
+                />
+
+                <Route
+                    path="government-updates/:id"
+                    element={<UpdateDetails />}
+                />
+
+                <Route
+                    path="government-updates/:id/edit"
+                    element={<EditUpdate />}
                 />
 
             </Route>

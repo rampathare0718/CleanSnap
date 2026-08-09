@@ -3,18 +3,20 @@ const User = require("../models/User");
 const { createNotification } = require("./notificationController");
 
 // ==========================================================
-// Internal helper — notifies every citizen when an update
-// goes live (used on create + on status toggle to Published)
+// Internal helper — notifies every citizen AND worker when
+// an update goes live (used on create + on status toggle to Published)
 // ==========================================================
-const notifyCitizensOfUpdate = async (update) => {
+const notifyUsersOfUpdate = async (update) => {
     try {
 
-        const citizens = await User.find({ role: "citizen" }).select("_id");
+        const recipients = await User.find({
+            role: { $in: ["citizen", "worker"] }
+        }).select("_id");
 
         await Promise.all(
-            citizens.map((citizen) =>
+            recipients.map((recipient) =>
                 createNotification({
-                    user: citizen._id,
+                    user: recipient._id,
                     title: `New Update: ${update.category}`,
                     message: update.title,
                     type: "GovernmentUpdate"
@@ -25,7 +27,7 @@ const notifyCitizensOfUpdate = async (update) => {
     } catch (error) {
 
         // Never let a notification failure break the main flow
-        console.error("Notify Citizens Of Update Error:", error.message);
+        console.error("Notify Users Of Update Error:", error.message);
 
     }
 };
@@ -64,9 +66,9 @@ const createGovernmentUpdate = async (req, res) => {
             createdBy: req.user._id
         });
 
-        // Notify all citizens only if the update goes live immediately
+        // Notify all citizens + workers only if the update goes live immediately
         if (newUpdate.status === "Published") {
-            await notifyCitizensOfUpdate(newUpdate);
+            await notifyUsersOfUpdate(newUpdate);
         }
 
         return res.status(201).json({
@@ -109,7 +111,7 @@ const getAllGovernmentUpdates = async (req, res) => {
             filter.category = category;
         }
 
-        // Citizens should only see Published updates by default.
+        // Citizens/workers should only see Published updates by default.
         // Only admins can explicitly request Draft updates.
         if (status) {
             if (status === "Draft" && req.user?.role !== "admin") {
@@ -237,9 +239,9 @@ const updateGovernmentUpdate = async (req, res) => {
 
         const updatedDoc = await update.save();
 
-        // Notify citizens only the moment a Draft first goes Published
+        // Notify citizens + workers only the moment a Draft first goes Published
         if (!wasPublished && updatedDoc.status === "Published") {
-            await notifyCitizensOfUpdate(updatedDoc);
+            await notifyUsersOfUpdate(updatedDoc);
         }
 
         return res.status(200).json({
@@ -317,9 +319,9 @@ const toggleGovernmentUpdateStatus = async (req, res) => {
 
         await update.save();
 
-        // Notify citizens only when it flips TO Published
+        // Notify citizens + workers only when it flips TO Published
         if (update.status === "Published") {
-            await notifyCitizensOfUpdate(update);
+            await notifyUsersOfUpdate(update);
         }
 
         return res.status(200).json({
