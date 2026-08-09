@@ -9,7 +9,9 @@ import {
     Megaphone,
     UserCircle,
     ClipboardCheck,
-    UploadCloud
+    UploadCloud,
+    Gift,
+    Trophy
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -17,7 +19,9 @@ const LINKS_BY_ROLE = {
     citizen: [
         { to: "/citizen/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { to: "/citizen/complaints/new", label: "Report Issue", icon: PlusCircle },
-        { to: "/citizen/complaints", label: "My Complaints", icon: ListChecks }
+        { to: "/citizen/complaints", label: "My Complaints", icon: ListChecks },
+        { to: "/citizen/rewards", label: "Rewards", icon: Gift },
+        { to: "/citizen/leaderboard", label: "Leaderboard", icon: Trophy }
     ],
     worker: [
         { to: "/worker/dashboard", label: "Dashboard", icon: LayoutDashboard },

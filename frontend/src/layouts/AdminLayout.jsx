@@ -7,6 +7,7 @@ const navItems = [
   { label: "Workers", path: "/admin/workers" },
   { label: "Users", path: "/admin/users" },
   { label: "Government Updates", path: "/admin/government-updates" },
+  { label: "Leaderboard", path: "/admin/leaderboard" },
   { label: "Profile", path: "/admin/profile" },
 ];
 

@@ -46,6 +46,12 @@ import UpdateDetails from "../pages/government/UpdateDetails";
 import CreateUpdate from "../pages/government/CreateUpdate";
 import EditUpdate from "../pages/government/EditUpdate";
 
+// =========================
+// Rewards
+// =========================
+import Rewards from "../pages/rewards/Rewards";
+import Leaderboard from "../pages/rewards/Leaderboard";
+
 
 // ==========================================================
 // Role Home
@@ -226,6 +232,17 @@ const AppRoutes = () => {
                     element={<CitizenComplaintDetails />}
                 />
 
+                {/* Rewards */}
+                <Route
+                    path="rewards"
+                    element={<Rewards />}
+                />
+
+                <Route
+                    path="leaderboard"
+                    element={<Leaderboard />}
+                />
+
             </Route>
 
 
@@ -347,6 +364,12 @@ const AppRoutes = () => {
                 <Route
                     path="government-updates/:id/edit"
                     element={<EditUpdate />}
+                />
+
+                {/* Reward Leaderboard (admin view) */}
+                <Route
+                    path="leaderboard"
+                    element={<Leaderboard />}
                 />
 
             </Route>

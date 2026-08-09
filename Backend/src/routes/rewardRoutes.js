@@ -27,6 +27,20 @@ router.get(
 );
 
 // ==========================================================
+// Shared Routes (Citizen + Admin)
+// ==========================================================
+
+// @desc    Reward Leaderboard
+// @route   GET /api/rewards/leaderboard
+// @access  Private (Citizen, Admin)
+router.get(
+    "/leaderboard",
+    protect,
+    authorize("citizen", "admin"),
+    getLeaderboard
+);
+
+// ==========================================================
 // Admin Routes
 // ==========================================================
 
@@ -48,16 +62,6 @@ router.get(
     protect,
     authorize("admin"),
     getUserRewardSummary
-);
-
-// @desc    Reward Leaderboard
-// @route   GET /api/rewards/leaderboard
-// @access  Private (Admin)
-router.get(
-    "/leaderboard",
-    protect,
-    authorize("admin"),
-    getLeaderboard
 );
 
 // @desc    End Reward Cycle
