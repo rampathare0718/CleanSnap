@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
+import CleanSnapLanding from "../pages/auth/CleanSnapLanding";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import Loader from "../components/common/Loader";
@@ -144,15 +145,18 @@ const AppRoutes = () => {
 
             {/* ==================================================
                 ROOT
+                Logged-out visitors see the landing page.
+                Logged-in users are bounced straight to their
+                role's dashboard (same rule PublicOnlyRoute already
+                applies to /login and /register).
             ================================================== */}
 
             <Route
                 path="/"
                 element={
-                    <Navigate
-                        to="/login"
-                        replace
-                    />
+                    <PublicOnlyRoute>
+                        <CleanSnapLanding />
+                    </PublicOnlyRoute>
                 }
             />
 
@@ -383,7 +387,7 @@ const AppRoutes = () => {
                 path="*"
                 element={
                     <Navigate
-                        to="/login"
+                        to="/"
                         replace
                     />
                 }

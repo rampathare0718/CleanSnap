@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
@@ -29,6 +28,7 @@ const Register = () => {
     const [fieldErrors, setFieldErrors] = useState({});
     const [formError, setFormError] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -50,18 +50,44 @@ const Register = () => {
         const errors = {};
 
         if (!formData.fullName.trim()) errors.fullName = "Full name is required.";
-        if (!formData.email.trim()) errors.email = "Email is required.";
-        if (!formData.password) errors.password = "Password is required.";
-        else if (formData.password.length < 6)
+        
+        if (!formData.email.trim()) {
+            errors.email = "Email is required.";
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            errors.email = "Please enter a valid email address.";
+        }
+
+        if (!formData.password) {
+            errors.password = "Password is required.";
+        } else if (formData.password.length < 6) {
             errors.password = "Password must be at least 6 characters.";
-        if (formData.confirmPassword !== formData.password)
+        }
+
+        if (formData.confirmPassword !== formData.password) {
             errors.confirmPassword = "Passwords do not match.";
-        if (!formData.mobileNumber.trim()) errors["mobileNumber"] = "Mobile number is required.";
-        if (!formData.age) errors.age = "Age is required.";
+        }
+
+        if (!formData.mobileNumber.trim()) {
+            errors["mobileNumber"] = "Mobile number is required.";
+        } else if (!/^\d{10}$/.test(formData.mobileNumber.trim())) {
+            errors["mobileNumber"] = "Enter a valid 10-digit mobile number.";
+        }
+
+        if (!formData.age) {
+            errors.age = "Age is required.";
+        } else if (Number(formData.age) < 13) {
+            errors.age = "You must be at least 13 years old.";
+        }
+
         if (!formData.gender) errors.gender = "Please select a gender.";
         if (!formData.address.city.trim()) errors["address.city"] = "City is required.";
         if (!formData.address.state.trim()) errors["address.state"] = "State is required.";
-        if (!formData.address.pincode.trim()) errors["address.pincode"] = "Pincode is required.";
+        
+        if (!formData.address.pincode.trim()) {
+            errors["address.pincode"] = "Pincode is required.";
+        } else if (!/^\d{6}$/.test(formData.address.pincode.trim())) {
+            errors["address.pincode"] = "Enter a valid 6-digit pincode.";
+        }
 
         setFieldErrors(errors);
         return Object.keys(errors).length === 0;
@@ -80,19 +106,29 @@ const Register = () => {
         const result = await register(payload);
         setIsSubmitting(false);
 
-        if (result.success) {
+        if (result?.success) {
             navigate("/dashboard");
         } else {
-            setFormError(result.message);
+            setFormError(result?.message || "Registration failed. Please check your details.");
         }
     };
 
     return (
         <AuthLayout
-            title="Create your account"
-            subtitle="Join CleanSnap and start reporting waste in your area."
+            title="Create your CleanSnap account"
+            subtitle="Join our community to report waste issues, clean up neighborhood spots, and earn civic points."
         >
-            <form onSubmit={handleSubmit} noValidate>
+            {/* Top Navigation Back Link */}
+            <div className="mb-4">
+                <Link
+                    to="/"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-600 transition-colors"
+                >
+                    ← Back to CleanSnap Home
+                </Link>
+            </div>
+
+            <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
                 <Input
                     label="Full Name"
                     name="fullName"
@@ -104,7 +140,7 @@ const Register = () => {
                 />
 
                 <Input
-                    label="Email"
+                    label="Email Address"
                     type="email"
                     name="email"
                     value={formData.email}
@@ -114,20 +150,30 @@ const Register = () => {
                     required
                 />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input
-                        label="Password"
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder="At least 6 characters"
-                        error={fieldErrors.password}
-                        required
-                    />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div className="relative">
+                        <Input
+                            label="Password"
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Min 6 characters"
+                            error={fieldErrors.password}
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-[38px] text-xs font-medium text-slate-500 hover:text-slate-800 focus:outline-none"
+                        >
+                            {showPassword ? "Hide" : "Show"}
+                        </button>
+                    </div>
+
                     <Input
                         label="Confirm Password"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleChange}
@@ -137,14 +183,14 @@ const Register = () => {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <Input
                         label="Mobile Number"
                         type="tel"
                         name="mobileNumber"
                         value={formData.mobileNumber}
                         onChange={handleChange}
-                        placeholder="9876543210"
+                        placeholder="10-digit number"
                         error={fieldErrors.mobileNumber}
                         required
                     />
@@ -154,7 +200,7 @@ const Register = () => {
                         name="age"
                         value={formData.age}
                         onChange={handleChange}
-                        placeholder="25"
+                        placeholder="e.g. 25"
                         error={fieldErrors.age}
                         required
                     />
@@ -180,18 +226,18 @@ const Register = () => {
                     name="address.city"
                     value={formData.address.city}
                     onChange={handleChange}
-                    placeholder="Mumbai"
+                    placeholder="e.g. Mumbai"
                     error={fieldErrors["address.city"]}
                     required
                 />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <Input
                         label="State"
                         name="address.state"
                         value={formData.address.state}
                         onChange={handleChange}
-                        placeholder="Maharashtra"
+                        placeholder="e.g. Maharashtra"
                         error={fieldErrors["address.state"]}
                         required
                     />
@@ -200,27 +246,27 @@ const Register = () => {
                         name="address.pincode"
                         value={formData.address.pincode}
                         onChange={handleChange}
-                        placeholder="400001"
+                        placeholder="6-digit pincode"
                         error={fieldErrors["address.pincode"]}
                         required
                     />
                 </div>
 
                 {formError && (
-                    <p className="mb-4 rounded-lg bg-red-50 px-3.5 py-2.5 text-[13px] text-red-700">
+                    <div className="rounded-lg bg-red-50 border border-red-200 px-3.5 py-2.5 text-[13px] text-red-700 font-medium">
                         {formError}
-                    </p>
+                    </div>
                 )}
 
                 <Button type="submit" isLoading={isSubmitting}>
-                    Create account
+                    Create Account
                 </Button>
             </form>
 
-            <p className="mt-5 text-center text-sm text-neutral-500">
+            <p className="mt-5 text-center text-sm text-slate-500">
                 Already have an account?{" "}
                 <Link to="/login" className="font-semibold text-emerald-600 hover:underline">
-                    Log in
+                    Log in here
                 </Link>
             </p>
         </AuthLayout>

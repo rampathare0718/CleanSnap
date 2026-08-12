@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MapPin, UploadCloud, X } from "lucide-react";
+import { MapPin, UploadCloud, X, Camera, Sparkles, CheckCircle2 } from "lucide-react";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 import { createComplaint } from "../../services/complaintApi";
@@ -93,25 +93,41 @@ const CreateComplaint = () => {
     };
 
     return (
-        <div className="max-w-2xl">
-            <div className="bg-white border border-neutral-200 rounded-xl p-6">
-                <h2 className="text-lg font-bold text-neutral-900 mb-1">Report an Issue</h2>
-                <p className="text-sm text-neutral-500 mb-6">
-                    Add a photo and a few details — our team will review it shortly.
-                </p>
+        <div className="max-w-3xl mx-auto space-y-6 pb-12">
+            {/* Header Header */}
+            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-700 rounded-2xl p-6 sm:p-8 text-white shadow-xl shadow-emerald-900/10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 transform translate-x-6 -translate-y-6 opacity-10 pointer-events-none">
+                    <img src="/cleansnap_logo.png" alt="Logo Watermark" className="w-64 h-64 object-contain" />
+                </div>
 
-                <form onSubmit={handleSubmit} noValidate>
+                <div className="relative z-10 space-y-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-emerald-100 text-xs font-semibold">
+                        <Sparkles size={14} />
+                        <span>Snap & Report</span>
+                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                        Report an Issue
+                    </h1>
+                    <p className="text-emerald-100 text-sm max-w-xl">
+                        Add a photo and location details. CleanSnap will assign an team member to resolve it promptly.
+                    </p>
+                </div>
+            </div>
+
+            {/* Form Container */}
+            <div className="bg-white border border-neutral-200/80 rounded-2xl p-6 sm:p-8 shadow-sm">
+                <form onSubmit={handleSubmit} noValidate className="space-y-5">
                     <Input
-                        label="Title"
+                        label="Issue Title"
                         name="title"
                         value={formData.title}
                         onChange={handleChange}
-                        placeholder="e.g. Garbage pile near bus stop"
+                        placeholder="e.g. Overflowing waste bin near city park"
                         error={fieldErrors.title}
                         required
                     />
 
-                    <div className="flex flex-col mb-4">
+                    <div className="flex flex-col">
                         <label className="mb-1.5 text-[13px] font-semibold text-neutral-800">
                             Description<span className="ml-0.5 text-red-500">*</span>
                         </label>
@@ -119,76 +135,91 @@ const CreateComplaint = () => {
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
-                            placeholder="Describe what you saw — how large is the issue, how long has it been there, etc."
+                            placeholder="Describe what you observed — issue size, landmark details, or severity..."
                             rows={4}
-                            className={`w-full px-3.5 py-2.5 rounded-lg border-[1.5px] bg-neutral-50 text-sm text-neutral-900 outline-none transition-colors focus:bg-white focus:ring-4 ${
+                            className={`w-full px-4 py-3 rounded-xl border bg-neutral-50/50 text-sm text-neutral-900 outline-none transition-all focus:bg-white focus:ring-4 ${
                                 fieldErrors.description
                                     ? "border-red-400 focus:border-red-500 focus:ring-red-100"
                                     : "border-neutral-200 focus:border-emerald-600 focus:ring-emerald-100"
                             }`}
                         />
                         {fieldErrors.description && (
-                            <span className="mt-1.5 text-xs text-red-500">{fieldErrors.description}</span>
+                            <span className="mt-1.5 text-xs font-medium text-red-500">{fieldErrors.description}</span>
                         )}
                     </div>
 
-                    <Input
-                        label="Address"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        placeholder="Street, area, landmark"
-                        error={fieldErrors.address}
-                        required
-                    />
+                    <div className="space-y-2">
+                        <Input
+                            label="Address"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleChange}
+                            placeholder="Street, area, or nearby landmark"
+                            error={fieldErrors.address}
+                            required
+                        />
 
-                    <button
-                        type="button"
-                        onClick={handleUseLocation}
-                        disabled={isLocating}
-                        className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 hover:underline mb-5 disabled:opacity-60"
-                    >
-                        <MapPin size={15} />
-                        {isLocating
-                            ? "Fetching location..."
-                            : formData.latitude
-                            ? "Location captured ✓"
-                            : "Use my current location"}
-                    </button>
+                        <button
+                            type="button"
+                            onClick={handleUseLocation}
+                            disabled={isLocating}
+                            className={`inline-flex items-center gap-2 text-xs font-bold px-3 py-2 rounded-lg border transition-all ${
+                                formData.latitude
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-emerald-300 hover:text-emerald-600"
+                            }`}
+                        >
+                            {formData.latitude ? <CheckCircle2 size={14} className="text-emerald-600" /> : <MapPin size={14} />}
+                            {isLocating
+                                ? "Locating..."
+                                : formData.latitude
+                                ? "GPS Coordinates Captured ✓"
+                                : "Attach Current GPS Location"}
+                        </button>
+                    </div>
 
-                    {/* Image upload */}
-                    <div className="mb-5">
-                        <label className="mb-1.5 block text-[13px] font-semibold text-neutral-800">
-                            Photo of the issue<span className="ml-0.5 text-red-500">*</span>
+                    {/* Image Upload Zone */}
+                    <div className="space-y-1.5">
+                        <label className="block text-[13px] font-semibold text-neutral-800">
+                            Photo Evidence<span className="ml-0.5 text-red-500">*</span>
                         </label>
 
                         {imagePreview ? (
-                            <div className="relative w-full max-w-xs">
+                            <div className="relative w-full max-w-sm rounded-2xl overflow-hidden border border-neutral-200 shadow-sm group">
                                 <img
                                     src={imagePreview}
                                     alt="Preview"
-                                    className="w-full h-48 object-cover rounded-lg border border-neutral-200"
+                                    className="w-full h-52 object-cover"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={removeImage}
-                                    className="absolute top-2 right-2 flex items-center justify-center w-7 h-7 rounded-full bg-black/60 text-white hover:bg-black/75"
-                                >
-                                    <X size={15} />
-                                </button>
+                                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <button
+                                        type="button"
+                                        onClick={removeImage}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-600 text-white text-xs font-bold shadow-lg hover:bg-red-700 transition"
+                                    >
+                                        <X size={14} /> Remove Photo
+                                    </button>
+                                </div>
                             </div>
                         ) : (
                             <label
-                                className={`flex flex-col items-center justify-center gap-2 w-full h-40 rounded-lg border-2 border-dashed cursor-pointer transition ${
+                                className={`flex flex-col items-center justify-center gap-3 w-full h-48 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${
                                     fieldErrors.beforeImage
-                                        ? "border-red-300 bg-red-50"
-                                        : "border-neutral-300 bg-neutral-50 hover:bg-neutral-100"
+                                        ? "border-red-300 bg-red-50/50"
+                                        : "border-neutral-200 bg-neutral-50/50 hover:bg-emerald-50/30 hover:border-emerald-400"
                                 }`}
                             >
-                                <UploadCloud size={24} className="text-neutral-400" />
-                                <span className="text-sm text-neutral-500">
-                                    Click to upload a photo
-                                </span>
+                                <div className="p-3 bg-white text-emerald-600 rounded-full shadow-sm border border-neutral-100">
+                                    <Camera size={22} />
+                                </div>
+                                <div className="text-center">
+                                    <span className="text-sm font-semibold text-neutral-700 block">
+                                        Click or drag photo to upload
+                                    </span>
+                                    <span className="text-xs text-neutral-400">
+                                        Supports JPG, PNG up to 10MB
+                                    </span>
+                                </div>
                                 <input
                                     type="file"
                                     accept="image/*"
@@ -199,19 +230,18 @@ const CreateComplaint = () => {
                         )}
 
                         {fieldErrors.beforeImage && (
-                            <span className="mt-1.5 block text-xs text-red-500">
-                                {fieldErrors.beforeImage}
-                            </span>
+                            <span className="text-xs font-medium text-red-500 block">{fieldErrors.beforeImage}</span>
                         )}
                     </div>
 
                     {formError && (
-                        <p className="mb-4 rounded-lg bg-red-50 px-3.5 py-2.5 text-[13px] text-red-700">
+                        <div className="rounded-xl bg-red-50 border border-red-200 p-3.5 text-xs font-medium text-red-700">
                             {formError}
-                        </p>
+                        </div>
                     )}
 
-                    <div className="flex gap-3">
+                    {/* Form Actions */}
+                    <div className="pt-4 flex items-center gap-3">
                         <Button type="submit" isLoading={isSubmitting}>
                             Submit Complaint
                         </Button>
