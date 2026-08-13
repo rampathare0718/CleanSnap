@@ -1,5 +1,7 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CleanSnapLogo from "../../assets/cleansnap_logo.png";
+import MainImage from "../../assets/Mid_img_cleansnap.webp";
 
 const CleanSnapLanding = () => {
   const navigate = useNavigate();
@@ -17,7 +19,7 @@ const CleanSnapLanding = () => {
     <div className="min-h-screen w-full bg-white text-slate-800 font-sans">
       
       {/* ================= 1. TOPBAR / NAVBAR ================= */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 bg-white/95 backdrop-blur-md shadow-sm">
+      <header className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 bg-purple-100/95 backdrop-blur-md shadow-sm">
         
         {/* Left Side: Brand Logo & Swachh Bharat */}
         <div className="flex items-center gap-4">
@@ -30,10 +32,10 @@ const CleanSnapLanding = () => {
           <div className="h-7 w-px bg-slate-300"></div>
 
           <div className="flex items-center">
-            <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/3/30/Swachh_Bharat_Abhiyan_logo.svg" 
-              alt="Swachh Bharat Abhiyan" 
-              className="h-9 object-contain"
+            <img
+                src={CleanSnapLogo}
+                alt="CleanSnap"
+                className="h-9 object-contain"
             />
           </div>
         </div>
@@ -68,10 +70,10 @@ const CleanSnapLanding = () => {
       </header>
 
       {/* ================= 2. HERO SECTION ================= */}
-      <section 
-        ref={homeRef} 
+      <section
+        ref={homeRef}
         className="relative h-[85vh] bg-cover bg-center"
-        style={{ backgroundImage: `url('https://images.unsplash.com/photo-1518005068251-37900150df60?q=80&w=2000&auto=format&fit=crop')` }}
+        style={{ backgroundImage: `url(${MainImage})` }}
       >
         <div className="w-full h-full bg-slate-900/60 flex items-center justify-center px-6 text-center">
           <div className="max-w-4xl text-white">
