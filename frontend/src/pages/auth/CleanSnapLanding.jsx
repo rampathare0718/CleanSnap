@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CleanSnapLogo from "../../assets/cleansnap_logo.png";
-import MainImage from "../../assets/Mid_img_cleansnap.webp";
+import MainImage from "../../assets/cleansnap_main.jpg";
 
 const CleanSnapLanding = () => {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ const CleanSnapLanding = () => {
     <div className="min-h-screen w-full bg-white text-slate-800 font-sans">
       
       {/* ================= 1. TOPBAR / NAVBAR ================= */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 bg-purple-100/95 backdrop-blur-md shadow-sm">
+      <header className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 bg-purple-300/95 backdrop-blur-md shadow-sm">
         
         {/* Left Side: Brand Logo & Swachh Bharat */}
         <div className="flex items-center gap-4">
@@ -72,10 +72,10 @@ const CleanSnapLanding = () => {
       {/* ================= 2. HERO SECTION ================= */}
       <section
         ref={homeRef}
-        className="relative h-[85vh] bg-cover bg-center"
+        className="relative min-h-screen bg-cover bg-center"
         style={{ backgroundImage: `url(${MainImage})` }}
       >
-        <div className="w-full h-full bg-slate-900/60 flex items-center justify-center px-6 text-center">
+        <div className="absolute inset-0 bg-slate-900/60 flex items-center justify-center px-6 text-center">
           <div className="max-w-4xl text-white">
             <span className="inline-block px-4 py-1.5 bg-green-700/90 text-white rounded-full text-xs font-semibold tracking-wider uppercase mb-6">
               Welcome to CleanSnap
@@ -105,7 +105,7 @@ const CleanSnapLanding = () => {
       </section>
 
       {/* ================= 3. ABOUT US SECTION ================= */}
-      <section ref={aboutRef} className="py-20 px-6 md:px-16 lg:px-24 bg-white">
+      <section ref={aboutRef} className="py-20 px-6 md:px-16 lg:px-24 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-[length:200%_200%] animate-gradient">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-green-700 font-bold text-xs uppercase tracking-widest">
             About Us
