@@ -30,7 +30,7 @@ const Leaderboard = () => {
         if (results[1]) setMyPoints(results[1].totalPoints);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load leaderboard.");
-      } font-medium; {
+      } finally {
         setLoading(false);
       }
     };

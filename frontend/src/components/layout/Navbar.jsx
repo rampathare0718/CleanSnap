@@ -1,13 +1,12 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, PlusCircle, ListChecks, X } from "lucide-react";
-
-const links = [
-    { to: "/citizen/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/citizen/complaints/new", label: "Report Issue", icon: PlusCircle },
-    { to: "/citizen/complaints", label: "My Complaints", icon: ListChecks }
-];
+import { X } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { LINKS_BY_ROLE } from "./Sidebar";
 
 const Navbar = ({ isOpen, onClose }) => {
+    const { user } = useAuth();
+    const links = LINKS_BY_ROLE[user?.role] || [];
+
     if (!isOpen) return null;
 
     return (
@@ -29,7 +28,7 @@ const Navbar = ({ isOpen, onClose }) => {
                     </button>
                 </div>
 
-                <nav className="flex-1 px-3 py-5 space-y-1">
+                <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
                     {links.map(({ to, label, icon: Icon }) => (
                         <NavLink
                             key={to}

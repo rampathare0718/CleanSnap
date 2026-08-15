@@ -327,7 +327,7 @@ const AppRoutes = () => {
 
                 {/* Assign Worker */}
                 <Route
-                    path="complaints/:id/assign-worker"
+                    path="assign-worker"
                     element={<AssignWorker />}
                 />
 

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
-const LINKS_BY_ROLE = {
+export const LINKS_BY_ROLE = {
   citizen: [
     { to: "/citizen/dashboard", label: "Dashboard", icon: LayoutDashboard, badge: null },
     { to: "/citizen/complaints/new", label: "Report Issue", icon: PlusCircle, badge: "New" },
@@ -36,6 +36,7 @@ const LINKS_BY_ROLE = {
     { to: "/admin/workers", label: "Workers", icon: HardHat, badge: null },
     { to: "/admin/users", label: "Users", icon: Users, badge: null },
     { to: "/admin/government-updates", label: "Government Updates", icon: Megaphone, badge: null },
+    { to: "/admin/leaderboard", label: "Leaderboard", icon: Trophy, badge: null },
     { to: "/admin/profile", label: "Profile", icon: UserCircle, badge: null },
   ],
 };
