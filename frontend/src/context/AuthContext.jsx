@@ -60,6 +60,14 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    // Call after a successful profile update so the rest of the app
+    // (Topbar avatar/name, Profile page, etc.) reflects the new data
+    // immediately, without requiring the user to log in again.
+    const updateUser = (updatedUser) => {
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUser(updatedUser);
+    };
+
     const logout = () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -75,6 +83,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!token,
         login,
         register,
+        updateUser,
         logout
     };
 

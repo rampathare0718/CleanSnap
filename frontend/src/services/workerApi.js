@@ -24,3 +24,9 @@ export const completeComplaint = async (id, afterImageFile) => {
     });
     return response.data; // { success, message, complaint }
 };
+
+// Matches: router.get("/worker/rating", protect, authorize("worker"), getMyRating)
+export const getMyRating = async () => {
+    const response = await api.get("/complaints/worker/rating");
+    return response.data; // { success, averageRating, count, ratings }
+};

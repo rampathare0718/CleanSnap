@@ -10,6 +10,7 @@ import {
   Megaphone,
   UserCircle,
   ClipboardCheck,
+  UserCheck,
   Gift,
   Trophy,
   Sparkles,
@@ -24,6 +25,7 @@ export const LINKS_BY_ROLE = {
     { to: "/citizen/complaints", label: "My Complaints", icon: ListChecks, badge: null },
     { to: "/citizen/rewards", label: "Rewards", icon: Gift, badge: null },
     { to: "/citizen/leaderboard", label: "Leaderboard", icon: Trophy, badge: null },
+    { to: "/citizen/profile", label: "Profile", icon: UserCircle, badge: null },
   ],
   worker: [
     { to: "/worker/dashboard", label: "Dashboard", icon: LayoutDashboard, badge: null },
@@ -33,6 +35,7 @@ export const LINKS_BY_ROLE = {
   admin: [
     { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard, badge: null },
     { to: "/admin/complaints", label: "Complaints", icon: ClipboardList, badge: null },
+    { to: "/admin/assign-worker", label: "Assign Worker", icon: UserCheck, badge: null },
     { to: "/admin/workers", label: "Workers", icon: HardHat, badge: null },
     { to: "/admin/users", label: "Users", icon: Users, badge: null },
     { to: "/admin/government-updates", label: "Government Updates", icon: Megaphone, badge: null },

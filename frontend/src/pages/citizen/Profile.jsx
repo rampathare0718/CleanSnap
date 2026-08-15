@@ -1,36 +1,20 @@
-import { useState, useEffect } from "react";
-import { Mail, Phone, MapPin, Calendar, BadgeCheck, ShieldAlert, Star, Pencil, X } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Mail, Phone, MapPin, Calendar, BadgeCheck, ShieldAlert, Pencil, X, ArrowLeft } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { updateMyProfile } from "../../services/userApi";
-import { getMyRating } from "../../services/workerApi";
 import Input from "../../components/common/Input";
 import Button from "../../components/common/Button";
 
 const Profile = () => {
     const { user, updateUser } = useAuth();
+    const navigate = useNavigate();
 
     const [isEditing, setIsEditing] = useState(false);
     const [form, setForm] = useState(null);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState("");
     const [saveSuccess, setSaveSuccess] = useState("");
-
-    const [rating, setRating] = useState(null);
-    const [ratingLoading, setRatingLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchRating = async () => {
-            try {
-                const data = await getMyRating();
-                setRating(data);
-            } catch (err) {
-                console.error("Failed to load rating:", err);
-            } finally {
-                setRatingLoading(false);
-            }
-        };
-        fetchRating();
-    }, []);
 
     if (!user) return null;
 
@@ -88,7 +72,6 @@ const Profile = () => {
                 }
             };
 
-            // Only send password if the user actually typed a new one
             if (form.password.trim()) {
                 payload.password = form.password.trim();
             }
@@ -108,6 +91,13 @@ const Profile = () => {
         <div className="max-w-2xl space-y-5">
             <div className="flex items-center justify-between">
                 <div>
+                    <button
+                        onClick={() => navigate("/citizen/dashboard")}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-800 mb-2"
+                    >
+                        <ArrowLeft size={14} />
+                        Back to Dashboard
+                    </button>
                     <h2 className="text-xl font-bold text-neutral-900">My Profile</h2>
                     <p className="text-sm text-neutral-500 mt-1">
                         Your account details as registered with CleanSnap.
@@ -116,7 +106,7 @@ const Profile = () => {
                 {!isEditing && (
                     <button
                         onClick={startEditing}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors shrink-0"
                     >
                         <Pencil size={15} />
                         Edit Profile
@@ -179,7 +169,6 @@ const Profile = () => {
                 </form>
             ) : (
                 <div className="bg-white border border-neutral-200 rounded-xl p-6">
-                    {/* Header */}
                     <div className="flex items-center gap-4 pb-5 border-b border-neutral-100">
                         {user.profileImage ? (
                             <img
@@ -188,7 +177,7 @@ const Profile = () => {
                                 className="w-16 h-16 rounded-full object-cover"
                             />
                         ) : (
-                            <span className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-600 text-white text-xl font-bold">
+                            <span className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-tr from-violet-600 via-purple-600 to-pink-500 text-white text-xl font-bold">
                                 {user.fullName?.charAt(0)?.toUpperCase()}
                             </span>
                         )}
@@ -209,7 +198,6 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    {/* Details */}
                     <div className="space-y-3 pt-5">
                         <div className="flex items-center gap-3 text-sm text-neutral-700">
                             <Mail size={16} className="text-neutral-400" />
@@ -245,73 +233,6 @@ const Profile = () => {
                     </div>
                 </div>
             )}
-
-            {/* Rating */}
-            <div className="bg-white border border-neutral-200 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-1">
-                    <div className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-amber-50 text-amber-500">
-                        <Star size={20} fill="currentColor" />
-                    </div>
-                    <div>
-                        <h3 className="font-semibold text-neutral-900">My Rating</h3>
-                        <p className="text-xs text-neutral-500">Based on citizen feedback for completed cleanups</p>
-                    </div>
-                </div>
-
-                {ratingLoading ? (
-                    <p className="text-sm text-neutral-400 mt-4">Loading rating...</p>
-                ) : rating && rating.count > 0 ? (
-                    <>
-                        <div className="flex items-center gap-3 mt-4">
-                            <span className="text-3xl font-extrabold text-neutral-900">
-                                {rating.averageRating.toFixed(1)}
-                            </span>
-                            <div>
-                                <div className="flex items-center gap-0.5">
-                                    {[1, 2, 3, 4, 5].map((n) => (
-                                        <Star
-                                            key={n}
-                                            size={16}
-                                            className={n <= Math.round(rating.averageRating) ? "text-amber-400" : "text-neutral-200"}
-                                            fill="currentColor"
-                                        />
-                                    ))}
-                                </div>
-                                <p className="text-xs text-neutral-500 mt-0.5">
-                                    From {rating.count} rated job{rating.count > 1 ? "s" : ""}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="mt-5 pt-4 border-t border-neutral-100 space-y-3">
-                            {rating.ratings.slice(0, 5).map((r) => (
-                                <div key={r._id} className="flex items-start justify-between gap-3">
-                                    <div>
-                                        <p className="text-sm font-medium text-neutral-900">{r.title}</p>
-                                        {r.ratingComment && (
-                                            <p className="text-xs text-neutral-500 mt-0.5">"{r.ratingComment}"</p>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center gap-0.5 shrink-0">
-                                        {[1, 2, 3, 4, 5].map((n) => (
-                                            <Star
-                                                key={n}
-                                                size={13}
-                                                className={n <= r.rating ? "text-amber-400" : "text-neutral-200"}
-                                                fill="currentColor"
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                ) : (
-                    <p className="text-sm text-neutral-500 mt-4">
-                        No ratings yet. Your average rating will appear here once citizens rate your completed cleanups.
-                    </p>
-                )}
-            </div>
         </div>
     );
 };

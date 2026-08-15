@@ -6,13 +6,23 @@ const {
     getAllUsers,
     getUserById,
     createWorker,
-    deleteUser
+    deleteUser,
+    updateProfile
 } = require("../controllers/userController");
 
 const {
     protect,
     authorize
 } = require("../middleware/authMiddleware");
+
+// Update own profile (any logged-in role)
+// PUT /api/users/profile
+// NOTE: placed before "/:id" so "profile" is never swallowed as an :id param
+router.put(
+    "/profile",
+    protect,
+    updateProfile
+);
 
 // Get all users
 // GET /api/users?role=worker

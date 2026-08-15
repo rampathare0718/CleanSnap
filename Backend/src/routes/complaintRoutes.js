@@ -17,6 +17,7 @@ const {
   completeComplaint,
   rateComplaint,
   deleteComplaint,
+  getMyRating,
 } = require("../controllers/complaintController");
 
 // ==========================================================
@@ -102,6 +103,14 @@ router.get(
   protect,
   authorize("worker"),
   getAssignedComplaints
+);
+
+// Get the logged-in worker's average rating + rated jobs
+router.get(
+  "/worker/rating",
+  protect,
+  authorize("worker"),
+  getMyRating
 );
 
 // Mark complaint as "In Progress"

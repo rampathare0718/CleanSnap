@@ -636,6 +636,41 @@ const deleteComplaint = async (req, res) => {
   }
 };
 
+// ==========================================================
+// @desc    Get the logged-in worker's average rating + rated jobs
+// @route   GET /api/complaints/worker/rating
+// @access  Private (worker)
+// ==========================================================
+const getMyRating = async (req, res) => {
+  try {
+    const ratedComplaints = await Complaint.find({
+      assignedWorker: req.user._id,
+      rating: { $ne: null },
+    })
+      .select("title rating ratingComment ratedAt")
+      .sort({ ratedAt: -1 });
+
+    const count = ratedComplaints.length;
+    const averageRating =
+      count > 0
+        ? ratedComplaints.reduce((sum, c) => sum + c.rating, 0) / count
+        : null;
+
+    return res.status(200).json({
+      success: true,
+      averageRating,
+      count,
+      ratings: ratedComplaints,
+    });
+  } catch (error) {
+    console.error("Get My Rating Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching your rating.",
+    });
+  }
+};
+
 module.exports = {
   createComplaint,
   getMyComplaints,
@@ -649,4 +684,5 @@ module.exports = {
   completeComplaint,
   rateComplaint,
   deleteComplaint,
+  getMyRating,
 };

@@ -16,6 +16,7 @@ import CitizenDashboard from "../pages/citizen/Dashboard";
 import CreateComplaint from "../pages/citizen/CreateComplaint";
 import MyComplaints from "../pages/citizen/MyComplaints";
 import CitizenComplaintDetails from "../pages/citizen/ComplaintDetails";
+import CitizenProfile from "../pages/citizen/Profile";
 
 // =========================
 // Worker
@@ -234,6 +235,11 @@ const AppRoutes = () => {
                 <Route
                     path="complaints/:id"
                     element={<CitizenComplaintDetails />}
+                />
+
+                <Route
+                    path="profile"
+                    element={<CitizenProfile />}
                 />
 
                 {/* Rewards */}

@@ -184,9 +184,111 @@ const deleteUser = async (req, res) => {
   }
 };
 
+// ==========================================================
+// @desc    Logged-in user updates their own profile
+//          (name, email, mobile, age, gender, address, and
+//          optionally password — all fields optional/partial)
+// @route   PUT /api/users/profile
+// @access  Private (any logged-in role)
+// ==========================================================
+const updateProfile = async (req, res) => {
+  try {
+    const bcrypt = require("bcrypt");
+
+    const {
+      fullName,
+      email,
+      password,
+      mobileNumber,
+      age,
+      gender,
+      address,
+    } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    // Email change — check no other account already uses it
+    if (email && email.toLowerCase() !== user.email) {
+      const existingEmail = await User.findOne({
+        email: email.toLowerCase(),
+        _id: { $ne: user._id },
+      });
+      if (existingEmail) {
+        return res.status(400).json({
+          success: false,
+          message: "Email already in use by another account.",
+        });
+      }
+      user.email = email.toLowerCase();
+    }
+
+    // Mobile change — check no other account already uses it
+    if (mobileNumber && mobileNumber !== user.mobileNumber) {
+      const existingMobile = await User.findOne({
+        mobileNumber,
+        _id: { $ne: user._id },
+      });
+      if (existingMobile) {
+        return res.status(400).json({
+          success: false,
+          message: "Mobile number already in use by another account.",
+        });
+      }
+      user.mobileNumber = mobileNumber;
+    }
+
+    if (fullName) user.fullName = fullName;
+    if (age) user.age = age;
+    if (gender) user.gender = gender;
+
+    if (address) {
+      user.address = {
+        ...user.address.toObject?.() ?? user.address,
+        ...address,
+      };
+    }
+
+    // Password change — only hash and update if a new one was provided
+    if (password) {
+      if (password.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: "Password must be at least 6 characters long.",
+        });
+      }
+      user.password = await bcrypt.hash(password, 10);
+    }
+
+    await user.save();
+
+    const updatedUser = user.toObject();
+    delete updatedUser.password;
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully.",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while updating profile.",
+    });
+  }
+};
+
 module.exports = {
   getAllUsers,
   getUserById,
   createWorker,
   deleteUser,
+  updateProfile,
 };

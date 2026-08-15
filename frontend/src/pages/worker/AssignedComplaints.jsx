@@ -1,65 +1,84 @@
-import { useNavigate } from "react-router-dom";
-import { MapPin, User, Calendar, AlertTriangle } from "lucide-react";
-import TaskStatusBadge from "../../components/worker/TaskStatusBadge";
-import { getImageUrl } from "../../services/complaintApi";
+import { useState, useEffect, useMemo } from "react";
+import AssignedComplaintCard from "../../components/worker/AssignedComplaintCard";
+import Loader from "../../components/common/Loader";
+import { getAssignedComplaints } from "../../services/workerApi";
 
-const AssignedComplaints = ({ complaint }) => {
-    const navigate = useNavigate();
+const STATUS_FILTERS = ["All", "Assigned", "In Progress"];
 
-    const formattedDate = new Date(complaint.createdAt).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric"
-    });
+const AssignedComplaints = () => {
+    const [complaints, setComplaints] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [activeFilter, setActiveFilter] = useState("All");
 
-    // Optional — only renders if your backend adds a `deadline` field to the
-    // Complaint model. Safe no-op otherwise.
-    const deadline = complaint.deadline ? new Date(complaint.deadline) : null;
-    const isOverdue = deadline && deadline < new Date() && complaint.status !== "Completed";
+    useEffect(() => {
+        const fetchAssigned = async () => {
+            try {
+                const data = await getAssignedComplaints();
+                setComplaints(data.complaints || []);
+            } catch (err) {
+                setError(err.response?.data?.message || "Failed to load your tasks.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchAssigned();
+    }, []);
+
+    const filteredComplaints = useMemo(() => {
+        if (activeFilter === "All") return complaints;
+        return complaints.filter((c) => c.status === activeFilter);
+    }, [complaints, activeFilter]);
 
     return (
-        <div
-            onClick={() => navigate(`/worker/complaints/${complaint._id}`)}
-            className="flex gap-4 p-4 rounded-xl border border-neutral-200 bg-white hover:border-emerald-300 hover:shadow-sm transition cursor-pointer"
-        >
-            <img
-                src={getImageUrl(complaint.beforeImage)}
-                alt={complaint.title}
-                className="w-20 h-20 rounded-lg object-cover shrink-0 bg-neutral-100"
-            />
-
-            <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-neutral-900 truncate">{complaint.title}</h3>
-                    <TaskStatusBadge status={complaint.status} />
-                </div>
-
-                <div className="flex items-center gap-1.5 text-xs text-neutral-500 mt-1.5">
-                    <MapPin size={13} />
-                    <span className="truncate">{complaint.location?.address}</span>
-                </div>
-
-                {complaint.reportedBy && (
-                    <div className="flex items-center gap-1.5 text-xs text-neutral-500 mt-1">
-                        <User size={13} />
-                        <span className="truncate">
-                            {complaint.reportedBy.fullName} • {complaint.reportedBy.mobileNumber}
-                        </span>
-                    </div>
-                )}
-
-                {deadline && (
-                    <div className={`flex items-center gap-1.5 text-xs mt-1 ${isOverdue ? "text-red-600" : "text-neutral-500"}`}>
-                        {isOverdue ? <AlertTriangle size={13} /> : <Calendar size={13} />}
-                        <span>
-                            {isOverdue ? "Overdue — was due" : "Due"}{" "}
-                            {deadline.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                        </span>
-                    </div>
-                )}
-
-                <p className="text-xs text-neutral-400 mt-1.5">{formattedDate}</p>
+        <div className="space-y-5">
+            <div>
+                <h2 className="text-xl font-bold text-neutral-900">Assigned Tasks</h2>
+                <p className="text-sm text-neutral-500 mt-1">
+                    {complaints.length} task{complaints.length !== 1 ? "s" : ""} currently assigned to you.
+                </p>
             </div>
+
+            {/* Status filter tabs */}
+            <div className="flex gap-2 overflow-x-auto pb-1">
+                {STATUS_FILTERS.map((status) => (
+                    <button
+                        key={status}
+                        onClick={() => setActiveFilter(status)}
+                        className={`shrink-0 px-3.5 py-1.5 rounded-full text-sm font-medium border transition ${
+                            activeFilter === status
+                                ? "bg-emerald-600 text-white border-emerald-600"
+                                : "bg-white text-neutral-600 border-neutral-200 hover:border-emerald-300"
+                        }`}
+                    >
+                        {status}
+                    </button>
+                ))}
+            </div>
+
+            {error && (
+                <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">{error}</p>
+            )}
+
+            {isLoading ? (
+                <div className="flex justify-center py-16">
+                    <Loader />
+                </div>
+            ) : filteredComplaints.length === 0 ? (
+                <div className="bg-white border border-neutral-200 rounded-xl py-16 text-center">
+                    <p className="text-sm text-neutral-400">
+                        {activeFilter === "All"
+                            ? "No tasks assigned to you right now."
+                            : `No tasks with status "${activeFilter}".`}
+                    </p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {filteredComplaints.map((c) => (
+                        <AssignedComplaintCard key={c._id} complaint={c} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
