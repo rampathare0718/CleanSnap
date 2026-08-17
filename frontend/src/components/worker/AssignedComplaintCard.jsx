@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import AssignedComplaintCard from "../../components/worker/AssignedComplaintCard";
-import Loader from "../../components/common/Loader";
+import Loader from "../common/Loader";
 import { getAssignedComplaints } from "../../services/workerApi";
 
 const STATUS_FILTERS = ["All", "Assigned", "In Progress"];
