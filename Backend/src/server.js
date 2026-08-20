@@ -10,8 +10,11 @@ const connectDB = require("./config/db");
 app.use(cors({
     origin: "https://cleansnap-frontend-k69j.onrender.com",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
 }));
+
+app.options("*", cors());
 
 // Routes
 const authRoutes = require("./routes/authRoutes");
