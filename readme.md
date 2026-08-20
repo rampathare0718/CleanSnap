@@ -1,6 +1,5 @@
 backend url- https://cleansnap-backend-1h9o.onrender.com
-frontend url - https://cleansnap-frontend.onrender.com
-
+frontend url - https://cleansnap-frontend-k69j.onrender.com
 username- rampathare777_db_user
 password - 18fAy6L2kqKCcGbO
 

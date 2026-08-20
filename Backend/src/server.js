@@ -30,7 +30,7 @@ const app = express();
 // Middlewares
 // =========================
 app.use(cors({
-    origin: "https://cleansnap-frontend.onrender.com",
+    origin: "https://cleansnap-frontend-k69j.onrender.com",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
