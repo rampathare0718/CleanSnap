@@ -7,6 +7,12 @@ dotenv.config();
 
 const connectDB = require("./config/db");
 
+app.use(cors({
+    origin: "https://cleansnap-frontend-k69j.onrender.com",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
@@ -29,11 +35,7 @@ const app = express();
 // =========================
 // Middlewares
 // =========================
-app.use(cors({
-    origin: "https://cleansnap-frontend-k69j.onrender.com",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-}));
+
 
 app.use(express.json());
 
