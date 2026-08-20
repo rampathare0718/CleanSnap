@@ -3,6 +3,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
 
+dotenv.config();
+
 const connectDB = require("./config/db");
 
 // Routes
@@ -17,7 +19,7 @@ const feedbackRoutes=require("./routes/feedbackRoutes");
 
 
 // Load Environment Variables
-dotenv.config();
+
 
 // Connect Database
 connectDB();
