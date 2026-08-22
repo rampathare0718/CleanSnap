@@ -10,7 +10,6 @@ const sendEmail = require("../utils/sendEmail");
 // =========================
 const registerUser = async (req, res) => {
     try {
-
         console.log("===== REGISTER API HIT =====");
         console.log(req.body);
 
@@ -39,6 +38,7 @@ const registerUser = async (req, res) => {
         ) {
             return res.status(400).json({
                 success: false,
+                code: "VALIDATION_ERROR",
                 message: "Please fill all required fields."
             });
         }
@@ -51,6 +51,7 @@ const registerUser = async (req, res) => {
         if (existingEmail) {
             return res.status(400).json({
                 success: false,
+                code: "EMAIL_TAKEN",
                 message: "Email already registered."
             });
         }
@@ -63,6 +64,7 @@ const registerUser = async (req, res) => {
         if (existingMobile) {
             return res.status(400).json({
                 success: false,
+                code: "MOBILE_TAKEN",
                 message: "Mobile Number already registered."
             });
         }
@@ -124,6 +126,7 @@ const registerUser = async (req, res) => {
 
         return res.status(500).json({
             success: false,
+            code: "SERVER_ERROR",
             message: error.message
         });
     }
@@ -141,6 +144,7 @@ const loginUser = async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
+                code: "VALIDATION_ERROR",
                 message: "Email and Password are required."
             });
         }
@@ -152,7 +156,8 @@ const loginUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: "User not found."
+                code: "USER_NOT_FOUND",
+                message: "No account found with this email."
             });
         }
 
@@ -161,7 +166,8 @@ const loginUser = async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid Credentials."
+                code: "WRONG_PASSWORD",
+                message: "You have entered wrong password."
             });
         }
 
@@ -189,6 +195,7 @@ const loginUser = async (req, res) => {
 
         return res.status(500).json({
             success: false,
+            code: "SERVER_ERROR",
             message: error.message
         });
 
@@ -205,15 +212,13 @@ const forgotPassword = async (req, res) => {
         if (!email) {
             return res.status(400).json({
                 success: false,
+                code: "VALIDATION_ERROR",
                 message: "Email is required."
             });
         }
 
         const user = await User.findOne({ email: email.toLowerCase() });
 
-        // Always respond with success even if the email doesn't exist —
-        // this prevents attackers from using this endpoint to figure out
-        // which emails are registered ("email enumeration").
         if (!user) {
             return res.status(200).json({
                 success: true,
@@ -221,9 +226,6 @@ const forgotPassword = async (req, res) => {
             });
         }
 
-        // Generate a secure random token. The RAW token goes in the email
-        // link; only its HASH is stored in the database, so even if the
-        // database is leaked, the token itself can't be reconstructed.
         const rawToken = crypto.randomBytes(32).toString("hex");
         const hashedToken = crypto
             .createHash("sha256")
@@ -261,6 +263,7 @@ const forgotPassword = async (req, res) => {
             console.error("Failed to send reset email:", emailError);
             return res.status(500).json({
                 success: false,
+                code: "EMAIL_SEND_FAILED",
                 message: "Could not send reset email. Please try again later."
             });
         }
@@ -274,6 +277,7 @@ const forgotPassword = async (req, res) => {
         console.error(error);
         return res.status(500).json({
             success: false,
+            code: "SERVER_ERROR",
             message: error.message
         });
     }
@@ -290,6 +294,7 @@ const resetPassword = async (req, res) => {
         if (!token) {
             return res.status(400).json({
                 success: false,
+                code: "VALIDATION_ERROR",
                 message: "Reset token is missing."
             });
         }
@@ -297,6 +302,7 @@ const resetPassword = async (req, res) => {
         if (!newPassword) {
             return res.status(400).json({
                 success: false,
+                code: "VALIDATION_ERROR",
                 message: "New password is required."
             });
         }
@@ -304,13 +310,11 @@ const resetPassword = async (req, res) => {
         if (newPassword.length < 6) {
             return res.status(400).json({
                 success: false,
+                code: "VALIDATION_ERROR",
                 message: "Password must be at least 6 characters long."
             });
         }
 
-        // Hash the incoming raw token the same way it was hashed when
-        // stored, then look up a user whose token matches and hasn't
-        // expired yet.
         const hashedToken = crypto
             .createHash("sha256")
             .update(token)
@@ -324,12 +328,11 @@ const resetPassword = async (req, res) => {
         if (!user) {
             return res.status(400).json({
                 success: false,
+                code: "RESET_TOKEN_INVALID",
                 message: "This reset link is invalid or has expired. Please request a new one."
             });
         }
 
-        // All good — update password and clear the reset token so it
-        // can't be reused.
         user.password = await bcrypt.hash(newPassword, 10);
         user.resetPasswordToken = null;
         user.resetPasswordExpiry = null;
@@ -344,6 +347,7 @@ const resetPassword = async (req, res) => {
         console.error(error);
         return res.status(500).json({
             success: false,
+            code: "SERVER_ERROR",
             message: error.message
         });
     }

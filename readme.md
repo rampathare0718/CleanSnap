@@ -1,8 +1,4 @@
-backend url- https://cleansnap-backend-1h9o.onrender.com
-frontend url - https://cleansnap-frontend-k69j.onrender.com
-username- rampathare777_db_user
-password - 18fAy6L2kqKCcGbO
+rampathare1818_db_user
+DWzAcYwcA1vVygWH
 
-mongodb+srv://rampathare777_db_user:18fAy6L2kqKCcGbO@cluster1.tsd0yko.mongodb.net/?cleansnap_DB=Cluster1
-
-email passwd - srwb nrdr vqtq hypq
+db link- mongodb+srv://rampathare1818_db_user:DWzAcYwcA1vVygWH@cluster1.ll10uva.mongodb.net/?appName=Cluster1

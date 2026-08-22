@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true); // only for initial session restore
     const [error, setError] = useState(null);
 
     // Restore session on first load
@@ -28,41 +28,37 @@ export const AuthProvider = ({ children }) => {
         setUser(data.user);
     };
 
+    // NOTE: no more setLoading(true/false) here — that flag is reserved
+    // for the one-time session restore above. The Login/Register pages
+    // already track their own submitting state locally.
     const login = async (credentials) => {
         setError(null);
-        setLoading(true);
         try {
             const data = await loginUser(credentials);
             persistSession(data);
             return { success: true, user: data.user };
         } catch (err) {
             const message = err.response?.data?.message || "Login failed. Please try again.";
+            const code = err.response?.data?.code || "UNKNOWN_ERROR";
             setError(message);
-            return { success: false, message };
-        } finally {
-            setLoading(false);
+            return { success: false, message, code };
         }
     };
 
     const register = async (formData) => {
         setError(null);
-        setLoading(true);
         try {
             const data = await registerUser(formData);
             persistSession(data);
             return { success: true, user: data.user };
         } catch (err) {
             const message = err.response?.data?.message || "Registration failed. Please try again.";
+            const code = err.response?.data?.code || "UNKNOWN_ERROR";
             setError(message);
-            return { success: false, message };
-        } finally {
-            setLoading(false);
+            return { success: false, message, code };
         }
     };
 
-    // Call after a successful profile update so the rest of the app
-    // (Topbar avatar/name, Profile page, etc.) reflects the new data
-    // immediately, without requiring the user to log in again.
     const updateUser = (updatedUser) => {
         localStorage.setItem("user", JSON.stringify(updatedUser));
         setUser(updatedUser);
@@ -90,7 +86,6 @@ export const AuthProvider = ({ children }) => {
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Hook for consuming the context
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; 
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
@@ -16,6 +16,10 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    console.log("fieldErrors CHANGED:", fieldErrors);
+  }, [fieldErrors]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -23,6 +27,7 @@ const Login = () => {
       [name]: type === "checkbox" ? checked : value,
     }));
     setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    setFormError(""); // Clear global form error on input change
   };
 
   const validate = () => {
@@ -51,13 +56,38 @@ const Login = () => {
     const result = await login(formData);
     setIsSubmitting(false);
 
+    console.log("LOGIN RESULT:", result);
+
     if (result?.success) {
       const role = result.user?.role;
       if (role === "admin") navigate("/admin/dashboard");
       else if (role === "worker") navigate("/worker/dashboard");
       else navigate("/dashboard");
-    } else {
-      setFormError(result?.message || "Invalid credentials. Please try again.");
+      return;
+    }
+
+    // Switch on the backend's error code instead of guessing from message text
+    switch (result?.code) {
+      case "WRONG_PASSWORD":
+        setFieldErrors((prev) => ({
+          ...prev,
+          password: "Wrong password. Please try again.",
+        }));
+        break;
+
+      case "USER_NOT_FOUND":
+        setFieldErrors((prev) => ({
+          ...prev,
+          email: "No account found with this email.",
+        }));
+        break;
+
+      case "VALIDATION_ERROR":
+        setFormError(result?.message || "Please check your details and try again.");
+        break;
+
+      default:
+        setFormError(result?.message || "Invalid credentials. Please try again.");
     }
   };
 
@@ -65,10 +95,10 @@ const Login = () => {
     <div
       className="relative min-h-screen w-full bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: `url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop')`, // Replace with your desired landscape image URL
+        backgroundImage: `url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop')`,
       }}
     >
-      {/* Overlay: darker on the left where the welcome copy sits, lighter toward the right */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-black/10" />
 
       {/* Top Left Home Link */}
@@ -105,7 +135,6 @@ const Login = () => {
             Sign in to manage your bookings, track your cleaners, and pick up right where you left off.
           </p>
 
-          {/* Small reassurance row, hidden on very small screens to keep things tidy */}
           <div className="hidden sm:flex items-center gap-6 mt-8 justify-center lg:justify-start text-white/70 text-xs font-light">
             <div className="flex items-center gap-2">
               <svg className="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +154,6 @@ const Login = () => {
         {/* Right: Login card */}
         <div className="w-full lg:w-[420px] shrink-0">
           <div className="relative z-10 w-full max-w-md rounded-3xl bg-gradient-to-r from-red-500/70 via-orange-500/70 via-yellow-500/70 via-green-500/70 via-blue-500/70 via-indigo-500/70 to-purple-500/70 bg-[length:400%_400%] animate-rainbow backdrop-blur-2xl border border-white/40 p-8 sm:p-10 shadow-2xl text-white">
-            {/* Header */}
             <div className="mb-8">
               <h2 className="text-3xl font-bold tracking-wide">Login</h2>
               <p className="text-sm text-black/80 mt-1 font-light">
@@ -133,9 +161,9 @@ const Login = () => {
               </p>
             </div>
 
-            {/* Form Error Alert */}
+            {/* General Form Error Alert */}
             {formError && (
-              <div className="mb-5 rounded-xl bg-red-500/20 border border-red-400/40 px-4 py-3 text-xs text-red-200 font-medium backdrop-blur-sm">
+              <div className="mb-5 rounded-xl bg-red-500/30 border border-red-400/50 px-4 py-3 text-xs text-red-100 font-medium backdrop-blur-sm">
                 {formError}
               </div>
             )}
@@ -155,14 +183,15 @@ const Login = () => {
                     } rounded-xl px-4 py-3.5 pr-11 text-sm text-white placeholder-white/60 outline-none transition-all duration-200`}
                   />
                   <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/70">
-                    {/* User Icon */}
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
                 </div>
                 {fieldErrors.email && (
-                  <span className="text-xs text-red-300 mt-1 block pl-1">{fieldErrors.email}</span>
+                  <span className="text-xs text-red-200 mt-1.5 block px-2 py-1 rounded-md bg-red-950/60 border border-red-500/40 font-semibold shadow-sm">
+                    {fieldErrors.email}
+                  </span>
                 )}
               </div>
 
@@ -176,7 +205,7 @@ const Login = () => {
                     onChange={handleChange}
                     placeholder="Password"
                     className={`w-full bg-transparent border ${
-                      fieldErrors.password ? "border-red-400" : "border-white/40 focus:border-white"
+                      fieldErrors.password ? "border-red-400 focus:border-red-300 ring-1 ring-red-400" : "border-white/40 focus:border-white"
                     } rounded-xl px-4 py-3.5 pr-11 text-sm text-white placeholder-white/60 outline-none transition-all duration-200`}
                   />
                   <button
@@ -184,7 +213,6 @@ const Login = () => {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors focus:outline-none"
                   >
-                    {/* Eye / Eye-Slash Icon */}
                     {showPassword ? (
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -197,8 +225,11 @@ const Login = () => {
                     )}
                   </button>
                 </div>
+                {/* Field-level red error message for wrong password */}
                 {fieldErrors.password && (
-                  <span className="text-xs text-red-300 mt-1 block pl-1">{fieldErrors.password}</span>
+                  <span className="text-xs text-red-200 mt-1.5 block px-2 py-1 rounded-md bg-red-950/60 border border-red-500/40 font-semibold shadow-sm">
+                    ⚠️ {fieldErrors.password}
+                  </span>
                 )}
               </div>
 
@@ -226,7 +257,7 @@ const Login = () => {
                 </Link>
               </div>
 
-              {/* Login Button with Gradient */}
+              {/* Login Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -240,16 +271,12 @@ const Login = () => {
               </button>
             </form>
 
-            {/* Footer Link */}
             <p className="mt-6 text-center text-xs text-white/80 font-light">
               Don't have an account?{" "}
               <Link to="/register" className="font-semibold text-white hover:underline ml-1">
                 Signup
               </Link>
             </p>
-
-            {/* Creator Attribution */}
-            
           </div>
         </div>
       </div>
