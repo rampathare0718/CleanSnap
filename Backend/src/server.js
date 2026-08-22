@@ -28,7 +28,7 @@ const feedbackRoutes = require("./routes/feedbackRoutes");
 //   CORS_ORIGINS=http://localhost:5173,https://cleansnap-frontend-k69j.onrender.com
 const allowedOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim())
-    : ["http://localhost:5173", "https://cleansnap-frontend-k69j.onrender.com"];
+    : ["http://localhost:5173", "https://cleansnap-frontend-1b5w.onrender.com"];
 
 app.use(cors({
     origin: function (origin, callback) {
