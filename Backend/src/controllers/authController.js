@@ -1,7 +1,9 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const { createNotification } = require("./notificationController");
+const sendEmail = require("../utils/sendEmail");
 
 // =========================
 // Register User
@@ -193,7 +195,163 @@ const loginUser = async (req, res) => {
     }
 };
 
+// =========================
+// Forgot Password - Send Reset Link
+// =========================
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is required."
+            });
+        }
+
+        const user = await User.findOne({ email: email.toLowerCase() });
+
+        // Always respond with success even if the email doesn't exist —
+        // this prevents attackers from using this endpoint to figure out
+        // which emails are registered ("email enumeration").
+        if (!user) {
+            return res.status(200).json({
+                success: true,
+                message: "If that email is registered, a reset link has been sent."
+            });
+        }
+
+        // Generate a secure random token. The RAW token goes in the email
+        // link; only its HASH is stored in the database, so even if the
+        // database is leaked, the token itself can't be reconstructed.
+        const rawToken = crypto.randomBytes(32).toString("hex");
+        const hashedToken = crypto
+            .createHash("sha256")
+            .update(rawToken)
+            .digest("hex");
+
+        user.resetPasswordToken = hashedToken;
+        user.resetPasswordExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes
+        await user.save();
+
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+        const resetLink = `${frontendUrl}/reset-password/${rawToken}`;
+
+        try {
+            await sendEmail({
+                to: user.email,
+                subject: "CleanSnap - Reset Your Password",
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto;">
+                        <h2 style="color: #16a34a;">Reset Your Password</h2>
+                        <p>Hi ${user.fullName},</p>
+                        <p>We received a request to reset your CleanSnap password. Click the button below to set a new password. This link is valid for 15 minutes.</p>
+                        <div style="text-align: center; margin: 28px 0;">
+                            <a href="${resetLink}" style="background: #16a34a; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: bold; display: inline-block;">
+                                Reset Password
+                            </a>
+                        </div>
+                        <p style="font-size: 12px; color: #666;">If the button doesn't work, copy and paste this link into your browser:</p>
+                        <p style="font-size: 12px; color: #16a34a; word-break: break-all;">${resetLink}</p>
+                        <p>If you did not request this, you can safely ignore this email — your password will remain unchanged.</p>
+                    </div>
+                `
+            });
+        } catch (emailError) {
+            console.error("Failed to send reset email:", emailError);
+            return res.status(500).json({
+                success: false,
+                message: "Could not send reset email. Please try again later."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "If that email is registered, a reset link has been sent."
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// =========================
+// Reset Password - Verify Token + Set New Password
+// =========================
+const resetPassword = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { newPassword } = req.body;
+
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                message: "Reset token is missing."
+            });
+        }
+
+        if (!newPassword) {
+            return res.status(400).json({
+                success: false,
+                message: "New password is required."
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must be at least 6 characters long."
+            });
+        }
+
+        // Hash the incoming raw token the same way it was hashed when
+        // stored, then look up a user whose token matches and hasn't
+        // expired yet.
+        const hashedToken = crypto
+            .createHash("sha256")
+            .update(token)
+            .digest("hex");
+
+        const user = await User.findOne({
+            resetPasswordToken: hashedToken,
+            resetPasswordExpiry: { $gt: Date.now() }
+        }).select("+resetPasswordToken +resetPasswordExpiry");
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "This reset link is invalid or has expired. Please request a new one."
+            });
+        }
+
+        // All good — update password and clear the reset token so it
+        // can't be reused.
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetPasswordToken = null;
+        user.resetPasswordExpiry = null;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset successful. You can now log in with your new password."
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     registerUser,
-    loginUser
+    loginUser,
+    forgotPassword,
+    resetPassword
 };

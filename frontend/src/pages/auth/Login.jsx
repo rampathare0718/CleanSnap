@@ -202,19 +202,28 @@ const Login = () => {
                 )}
               </div>
 
-              {/* Remember Me Checkbox */}
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="rememberMe"
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleChange}
-                  className="w-4 h-4 rounded border-white/40 bg-transparent accent-emerald-500 cursor-pointer"
-                />
-                <label htmlFor="rememberMe" className="text-xs text-white/90 select-none cursor-pointer font-light">
-                  Remember me
-                </label>
+              {/* Remember Me Checkbox + Forgot Password */}
+              <div className="flex items-center justify-between gap-2 pt-1">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded border-white/40 bg-transparent accent-emerald-500 cursor-pointer"
+                  />
+                  <label htmlFor="rememberMe" className="text-xs text-white/90 select-none cursor-pointer font-light">
+                    Remember me
+                  </label>
+                </div>
+
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-white/90 hover:text-white font-medium hover:underline"
+                >
+                  Forgot password?
+                </Link>
               </div>
 
               {/* Login Button with Gradient */}

@@ -80,6 +80,21 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // =========================
+    // Forgot Password (Token Link)
+    // =========================
+    resetPasswordToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    resetPasswordExpiry: {
+      type: Date,
+      default: null,
+      select: false,
+    },
   },
   {
     timestamps: true,

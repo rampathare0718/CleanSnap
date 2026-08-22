@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import CleanSnapLanding from "../pages/auth/CleanSnapLanding";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 import Loader from "../components/common/Loader";
 
 import { useAuth } from "../context/AuthContext";
@@ -180,6 +182,24 @@ const AppRoutes = () => {
                 element={
                     <PublicOnlyRoute>
                         <Register />
+                    </PublicOnlyRoute>
+                }
+            />
+
+            <Route
+                path="/forgot-password"
+                element={
+                    <PublicOnlyRoute>
+                        <ForgotPassword />
+                    </PublicOnlyRoute>
+                }
+            />
+
+            <Route
+                path="/reset-password/:token"
+                element={
+                    <PublicOnlyRoute>
+                        <ResetPassword />
                     </PublicOnlyRoute>
                 }
             />

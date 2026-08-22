@@ -22,8 +22,22 @@ const feedbackRoutes = require("./routes/feedbackRoutes");
 // =========================
 // CORS
 // =========================
+// Supports multiple origins (comma-separated in .env) so the same code
+// works for local development AND your deployed Render frontend.
+// Example .env value:
+//   CORS_ORIGINS=http://localhost:5173,https://cleansnap-frontend-k69j.onrender.com
+const allowedOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim())
+    : ["http://localhost:5173", "https://cleansnap-frontend-k69j.onrender.com"];
+
 app.use(cors({
-    origin: "https://cleansnap-frontend-k69j.onrender.com",
+    origin: function (origin, callback) {
+        // allow requests with no origin (like curl/Postman) and any listed origin
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error("Not allowed by CORS: " + origin));
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
